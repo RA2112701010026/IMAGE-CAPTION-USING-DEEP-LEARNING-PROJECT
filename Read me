@@ -1,0 +1,46 @@
+ the transformers library and are using a Vision Encoder-Decoder model for image captioning with a pre-trained model (nlpconnect/vit-gpt2-image-captioning). Your code demonstrates loading the model, feature extractor, and tokenizer, and then making a prediction on an image.
+
+Here's a brief summary of the steps:
+
+Installing the required libraries:
+python
+Copy code
+!pip install transformers
+!pip install torch transformers Pillow
+Importing necessary modules:
+python
+Copy code
+from transformers import VisionEncoderDecoderModel, ViTFeatureExtractor, AutoTokenizer
+import torch
+from PIL import Image
+Loading the pre-trained model, feature extractor, and tokenizer:
+python
+Copy code
+model = VisionEncoderDecoderModel.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
+feature_extractor = ViTFeatureExtractor.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
+tokenizer = AutoTokenizer.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
+Defining the prediction function:
+python
+Copy code
+def predict_step(image_paths):
+    images = []
+    for image_path in image_paths:
+        i_image = Image.open(image_path)
+        if i_image.mode != "RGB":
+            i_image = i_image.convert(mode="RGB")
+
+        images.append(i_image)
+
+    pixel_values = feature_extractor(images=images, return_tensors="pt").pixel_values
+    pixel_values = pixel_values.to(device)
+
+    output_ids = model.generate(pixel_values, **gen_kwargs)
+
+    preds = tokenizer.batch_decode(output_ids, skip_special_tokens=True)
+    preds = [pred.strip() for pred in preds]
+    return preds
+Making a prediction with an example image:
+python
+Copy code
+predict_step(['/content/WhatsApp Image 2023-10-06 at 8.59.56 AM.jpeg'])
+# Output: ['a man standing in front of a wall with graffiti on it']
